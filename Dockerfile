@@ -13,7 +13,8 @@ COPY .mvn .mvn/
 COPY src ./src
 
 # Compila el código, genera el JAR
-RUN ./mvnw clean package -DskipTests
+#RUN ./mvnw clean package -DskipTests
+RUN chmod +x mvnw && ./mvnw clean package -DskipTests
 
 # -------------------------------------------------------------------
 
