@@ -111,7 +111,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping()
+    @GetMapping("/me")
     public ResponseEntity<?> getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
