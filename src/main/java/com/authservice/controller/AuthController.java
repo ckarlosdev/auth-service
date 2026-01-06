@@ -21,18 +21,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
-@CrossOrigin(origins = {
-        "http://127.0.0.1:5500",
-        "https://oleo-soft.com",
-        "http://localhost:5173",
-        "https://ckarlosdev.github.io"
-})
 @RestController
 @RequestMapping("/api/auth")
 @AllArgsConstructor
