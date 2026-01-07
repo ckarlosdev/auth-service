@@ -165,7 +165,7 @@ public class AuthController {
         );
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado."));
+                .orElseThrow(() -> new UsernameNotFoundException("user not found."));
     }
 
     public static String hashToken(String token) {
@@ -174,7 +174,7 @@ public class AuthController {
             byte[] hashBytes = digest.digest(token.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hashBytes);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error al hashear el token", e);
+            throw new RuntimeException("Hashing token error.", e);
         }
     }
 }
