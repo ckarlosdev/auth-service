@@ -119,9 +119,21 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User unauthorized");
         }
 
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("username", authentication.getName());
-        return ResponseEntity.ok(userData);
+//        Map<String, Object> userData = new HashMap<>();
+//        userData.put("username", authentication.getName());
+//        return ResponseEntity.ok(userData);
+
+        return userRepository.findById(UUID.fromString(authentication.getName()))
+                .map(user -> {
+                    // 2. Creamos un mapa con la info real
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("id", user.getId());
+                    data.put("email", user.getEmail());
+                    data.put("fullName", user.getFirstName() + " " + user.getLastName());
+//                    data.put("role", user.getRole());
+                    return ResponseEntity.ok(data);
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     // -------------------------------
