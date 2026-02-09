@@ -15,9 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
@@ -112,29 +114,26 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()){
+    public ResponseEntity<?> getAuthenticatedUser(@AuthenticationPrincipal Jwt jwt) {
+        if (jwt == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User unauthorized");
         }
 
-//        Map<String, Object> userData = new HashMap<>();
-//        userData.put("username", authentication.getName());
-//        return ResponseEntity.ok(userData);
+        UUID userId = UUID.fromString(jwt.getSubject());
 
-        return userRepository.findById(UUID.fromString(authentication.getName()))
+        return userRepository.findById(userId)
                 .map(user -> {
-                    // 2. Creamos un mapa con la info real
                     Map<String, Object> data = new HashMap<>();
                     data.put("id", user.getId());
                     data.put("email", user.getEmail());
                     data.put("fullName", user.getFirstName() + " " + user.getLastName());
-//                    data.put("role", user.getRole());
                     return ResponseEntity.ok(data);
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+
+
 
     // -------------------------------
     // crea Access + Refresh tokens y guarda refresh en DB
