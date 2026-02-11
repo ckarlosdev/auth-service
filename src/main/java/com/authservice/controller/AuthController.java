@@ -61,7 +61,7 @@ public class AuthController {
                     request.email(), request.password(), request.firstName(), request.lastName()
             );
 //            AuthResponse response = authService.authenticate(request.email(), request.password());
-            AuthResponse response = createTokensForUser(newUser, httpRequest);
+            AuthResponse response = authService.createTokensForUser(newUser, httpRequest);
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
@@ -75,9 +75,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
-//            AuthResponse response = authService.authenticate(request.email(), request.password());
+//            AuthResponse response = authService.authService.authenticate(request.email(), request.password());
             User user = authenticateAndGetUser(request.email(), request.password());
-            AuthResponse response = createTokensForUser(user, httpRequest);
+            AuthResponse response = authService.createTokensForUser(user, httpRequest);
 
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
@@ -143,25 +143,25 @@ public class AuthController {
     // -------------------------------
     // crea Access + Refresh tokens y guarda refresh en DB
     // -------------------------------
-    private AuthResponse createTokensForUser(User user, HttpServletRequest httpRequest) {
-        String accessToken = generateAccessToken(user);
-
-        String rawRefreshToken = UUID.randomUUID().toString();
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setId(UUID.randomUUID());
-        refreshToken.setUser(user);
-        refreshToken.setTokenHash(passwordEncoder.encode(rawRefreshToken));
-        refreshToken.setExpiresAt(Instant.now().plusSeconds(60 * 60 * 24 * 7)); // 7 días
-        refreshToken.setIpAddress(httpRequest.getRemoteAddr());
-
-        refreshTokenRepository.save(refreshToken);
-
-        return new AuthResponse(accessToken, rawRefreshToken, user.getId());
-    }
-
-    public String generateAccessToken(User user) {
-        return jwtService.generateToken(user.getId(), user.getEmail());
-    }
+//    private AuthResponse createTokensForUser(User user, HttpServletRequest httpRequest) {
+//        String accessToken = generateAccessToken(user);
+//
+//        String rawRefreshToken = UUID.randomUUID().toString();
+//        RefreshToken refreshToken = new RefreshToken();
+//        refreshToken.setId(UUID.randomUUID());
+//        refreshToken.setUser(user);
+//        refreshToken.setTokenHash(passwordEncoder.encode(rawRefreshToken));
+//        refreshToken.setExpiresAt(Instant.now().plusSeconds(60 * 60 * 24 * 7)); // 7 días
+//        refreshToken.setIpAddress(httpRequest.getRemoteAddr());
+//
+//        refreshTokenRepository.save(refreshToken);
+//
+//        return new AuthResponse(accessToken, rawRefreshToken, user.getId());
+//    }
+//
+//    public String generateAccessToken(User user) {
+//        return jwtService.generateToken(user.getId(), user.getEmail());
+//    }
 
     public User authenticateAndGetUser(String email, String rawPassword) {
         authenticationManager.authenticate(
