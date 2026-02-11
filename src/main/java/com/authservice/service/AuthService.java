@@ -86,7 +86,7 @@ public class AuthService implements UserDetailsService {
         }
     }
 
-    private AuthResponse createTokensForUser(User user, HttpServletRequest httpRequest) {
+    public AuthResponse createTokensForUser(User user, HttpServletRequest httpRequest) {
 
         // 1️⃣ Access Token
         String accessToken = jwtService.generateToken(user.getId(), user.getEmail());
@@ -120,7 +120,7 @@ public class AuthService implements UserDetailsService {
     public AuthResponse refreshToken(String fullRefreshToken, HttpServletRequest request) {
 
         if (fullRefreshToken == null || !fullRefreshToken.contains(".")) {
-            throw new RuntimeException("Refresh token inválido");
+            throw new RuntimeException("Refresh token invalid.");
         }
 
         String[] parts = fullRefreshToken.split("\\.");
@@ -131,15 +131,15 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("Refresh token no encontrado"));
 
         if (!passwordEncoder.matches(rawSecret, refreshToken.getTokenHash())) {
-            throw new RuntimeException("Refresh token inválido");
+            throw new RuntimeException("Refresh token invalid");
         }
 
         if (refreshToken.getRevokedAt() != null) {
-            throw new RuntimeException("Refresh token revocado");
+            throw new RuntimeException("Refresh token revoked");
         }
 
         if (refreshToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new RuntimeException("Refresh token expirado");
+            throw new RuntimeException("Refresh token expired");
         }
 
         // Rotación (one-time use)
