@@ -92,11 +92,16 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody Map<String, String> body, HttpServletRequest request) {
         try {
-            String rawRefreshToken = body.get("refreshToken");
-            AuthResponse newTokens = authService.refreshToken(rawRefreshToken, request);
+            String fullRefreshToken = body.get("refreshToken");
+            if (fullRefreshToken == null || fullRefreshToken.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Refresh token required");
+            }
+            AuthResponse newTokens = authService.refreshToken(fullRefreshToken, request);
             return ResponseEntity.ok(newTokens);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage());
         }
     }
 
