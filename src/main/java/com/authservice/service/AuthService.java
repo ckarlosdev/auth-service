@@ -74,10 +74,10 @@ public class AuthService implements UserDetailsService {
         try {
             UUID userId = UUID.fromString(identifier);
             return userRepository.findById(userId)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con ID: " + identifier));
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + identifier));
         } catch (IllegalArgumentException e) {
             return userRepository.findByEmail(identifier)
-                    .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + identifier));
+                    .orElseThrow(() -> new UsernameNotFoundException("User nor found with email: " + identifier));
         }
     }
 
@@ -115,7 +115,7 @@ public class AuthService implements UserDetailsService {
     public AuthResponse refreshToken(String fullRefreshToken, HttpServletRequest request) {
 
         if (fullRefreshToken == null || !fullRefreshToken.contains(".")) {
-            throw new RuntimeException("Refresh token invalid.");
+            throw new RuntimeException("invalid refresh token.");
         }
 
         String[] parts = fullRefreshToken.split("\\.");
@@ -123,7 +123,7 @@ public class AuthService implements UserDetailsService {
         String rawSecret = parts[1];
 
         RefreshToken refreshToken = refreshTokenRepository.findById(tokenId)
-                .orElseThrow(() -> new RuntimeException("Refresh token no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
 
         if (!passwordEncoder.matches(rawSecret, refreshToken.getTokenHash())) {
             throw new RuntimeException("Refresh token invalid");
@@ -149,7 +149,7 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new RuntimeException("User not found."));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new BadCredentialsException("La clave actual no coincide");
+            throw new BadCredentialsException("Current password wrong.");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));

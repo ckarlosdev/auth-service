@@ -144,18 +144,13 @@ public class AuthController {
     @PutMapping("/update-password")
     public ResponseEntity<?> updatePassword(
             @RequestBody ChangePasswordRequest request,
-            @AuthenticationPrincipal User currentUser // Aquí Spring inyecta al usuario logueado
+            @AuthenticationPrincipal Jwt jwt // Aquí Spring inyecta al usuario logueado
     ) {
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
-        }
+        String subject = jwt.getSubject();
+        UUID userId = UUID.fromString(subject);
 
-        // Ahora tienes acceso directo a tu entidad
-        System.out.println("Cambiando clave para el usuario: " + currentUser.getEmail());
-
-        authService.changeUserPassword(currentUser.getId(), request.oldPassword(), request.newPassword());
-
-        return ResponseEntity.ok("Contraseña actualizada con éxito.");
+        authService.changeUserPassword(userId, request.oldPassword(), request.newPassword());
+        return ResponseEntity.ok("Pasword successfully udpated.");
     }
 
     public User authenticateAndGetUser(String email, String rawPassword) {
