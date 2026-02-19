@@ -1,6 +1,7 @@
 package com.authservice.controller;
 
 import com.authservice.dto.AuthResponse;
+import com.authservice.dto.ChangePasswordRequest;
 import com.authservice.model.RefreshToken;
 import com.authservice.model.User;
 import com.authservice.repository.RefreshTokenRepository;
@@ -9,14 +10,17 @@ import com.authservice.service.AuthService;
 import com.authservice.service.JwtService;
 import com.authservice.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -137,31 +141,22 @@ public class AuthController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @PutMapping("/update-password")
+    public ResponseEntity<?> updatePassword(
+            @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal User currentUser // Aquí Spring inyecta al usuario logueado
+    ) {
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
+        }
 
+        // Ahora tienes acceso directo a tu entidad
+        System.out.println("Cambiando clave para el usuario: " + currentUser.getEmail());
 
+        authService.changeUserPassword(currentUser.getId(), request.oldPassword(), request.newPassword());
 
-    // -------------------------------
-    // crea Access + Refresh tokens y guarda refresh en DB
-    // -------------------------------
-//    private AuthResponse createTokensForUser(User user, HttpServletRequest httpRequest) {
-//        String accessToken = generateAccessToken(user);
-//
-//        String rawRefreshToken = UUID.randomUUID().toString();
-//        RefreshToken refreshToken = new RefreshToken();
-//        refreshToken.setId(UUID.randomUUID());
-//        refreshToken.setUser(user);
-//        refreshToken.setTokenHash(passwordEncoder.encode(rawRefreshToken));
-//        refreshToken.setExpiresAt(Instant.now().plusSeconds(60 * 60 * 24 * 7)); // 7 días
-//        refreshToken.setIpAddress(httpRequest.getRemoteAddr());
-//
-//        refreshTokenRepository.save(refreshToken);
-//
-//        return new AuthResponse(accessToken, rawRefreshToken, user.getId());
-//    }
-//
-//    public String generateAccessToken(User user) {
-//        return jwtService.generateToken(user.getId(), user.getEmail());
-//    }
+        return ResponseEntity.ok("Contraseña actualizada con éxito.");
+    }
 
     public User authenticateAndGetUser(String email, String rawPassword) {
         authenticationManager.authenticate(
