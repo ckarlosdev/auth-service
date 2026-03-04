@@ -67,7 +67,7 @@ public class AuthController {
         }
     }
 
-    @PutMapping("/update-user")
+    @PutMapping("/update-user/{id}")
     public ResponseEntity<UserListDto> update(
             @PathVariable UUID id,
             @Valid @RequestBody UserUpdateDto updateDto
