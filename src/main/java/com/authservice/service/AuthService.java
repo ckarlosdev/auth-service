@@ -1,6 +1,7 @@
 package com.authservice.service;
 
 import com.authservice.dto.AuthResponse;
+import com.authservice.dto.UserListDto;
 import com.authservice.model.RefreshToken;
 import com.authservice.model.User;
 import com.authservice.repository.RefreshTokenRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,6 +28,18 @@ public class AuthService implements UserDetailsService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenRepository refreshTokenRepository;
+
+    public List<UserListDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> new UserListDto(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getFirstName(),
+                        user.getLastName()
+                ))
+                .toList();
+    }
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
