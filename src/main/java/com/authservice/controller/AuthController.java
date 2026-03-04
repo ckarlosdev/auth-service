@@ -2,7 +2,7 @@ package com.authservice.controller;
 
 import com.authservice.dto.AuthResponse;
 import com.authservice.dto.ChangePasswordRequest;
-import com.authservice.model.RefreshToken;
+import com.authservice.dto.UserListDto;
 import com.authservice.model.User;
 import com.authservice.repository.RefreshTokenRepository;
 import com.authservice.repository.UserRepository;
@@ -10,17 +10,13 @@ import com.authservice.service.AuthService;
 import com.authservice.service.JwtService;
 import com.authservice.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -29,11 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -151,6 +143,11 @@ public class AuthController {
 
         authService.changeUserPassword(userId, request.oldPassword(), request.newPassword());
         return ResponseEntity.ok("Pasword successfully udpated.");
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserListDto>> getAllUsers(){
+        return ResponseEntity.ok(authService.getAllUsers());
     }
 
     public User authenticateAndGetUser(String email, String rawPassword) {
