@@ -6,6 +6,7 @@ public record UserListDto (
         UUID id,
         String email,
         String firstName,
-        String lastName
+        String lastName,
+        Boolean isActive
 ) {
 }

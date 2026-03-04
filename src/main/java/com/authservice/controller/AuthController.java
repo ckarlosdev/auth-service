@@ -3,6 +3,7 @@ package com.authservice.controller;
 import com.authservice.dto.AuthResponse;
 import com.authservice.dto.ChangePasswordRequest;
 import com.authservice.dto.UserListDto;
+import com.authservice.dto.UserUpdateDto;
 import com.authservice.model.User;
 import com.authservice.repository.RefreshTokenRepository;
 import com.authservice.repository.UserRepository;
@@ -10,6 +11,7 @@ import com.authservice.service.AuthService;
 import com.authservice.service.JwtService;
 import com.authservice.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -63,6 +65,14 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PutMapping("/update-user")
+    public ResponseEntity<UserListDto> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UserUpdateDto updateDto
+    ) {
+        return ResponseEntity.ok(authService.updateUser(id, updateDto));
     }
 
     // -------------------------------

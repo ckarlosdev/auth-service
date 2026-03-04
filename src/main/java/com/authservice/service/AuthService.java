@@ -2,19 +2,21 @@ package com.authservice.service;
 
 import com.authservice.dto.AuthResponse;
 import com.authservice.dto.UserListDto;
+import com.authservice.dto.UserUpdateDto;
 import com.authservice.model.RefreshToken;
 import com.authservice.model.User;
 import com.authservice.repository.RefreshTokenRepository;
 import com.authservice.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -36,9 +38,24 @@ public class AuthService implements UserDetailsService {
                         user.getId(),
                         user.getEmail(),
                         user.getFirstName(),
-                        user.getLastName()
+                        user.getLastName(),
+                        user.isActive()
                 ))
                 .toList();
+    }
+
+    @Transactional
+    public UserListDto updateUser(UUID id, UserUpdateDto updateDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        user.setFirstName(updateDto.firstName());
+        user.setLastName(updateDto.lastName());
+        user.setEmail(updateDto.email());
+        user.setActive(updateDto.isActive());
+
+        User updatedUser = userRepository.save(user);
+        return new UserListDto(updatedUser.getId(), updatedUser.getEmail(), updatedUser.getFirstName(), updatedUser.getLastName(), updatedUser.isActive());
     }
 
     public AuthService(UserRepository userRepository,
