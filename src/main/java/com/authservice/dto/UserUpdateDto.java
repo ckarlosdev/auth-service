@@ -2,7 +2,10 @@ package com.authservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.Set;
 
 public record UserUpdateDto(
         @NotBlank(message = "The first name is required")
@@ -16,6 +19,9 @@ public record UserUpdateDto(
         String email,
 
         @NotNull(message = "Status is required")
-        Boolean isActive
+        Boolean isActive,
+
+        @NotEmpty(message = "The last name cannot be empty.")
+        Set<String>roles
 ) {
 }

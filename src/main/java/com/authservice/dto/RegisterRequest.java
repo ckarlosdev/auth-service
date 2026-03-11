@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
+import java.util.Set;
+
 public record RegisterRequest(
         @NotEmpty(message = "Email cannot be empty.")
         @Email(message = "Invalid format.")
@@ -17,5 +19,8 @@ public record RegisterRequest(
         String firstName,
 
         @NotEmpty(message = "The last name cannot be empty.")
-        String lastName
+        String lastName,
+
+        @NotEmpty(message = "The last name cannot be empty.")
+        Set<String> roles
 ) {}

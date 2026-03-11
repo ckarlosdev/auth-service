@@ -1,9 +1,6 @@
 package com.authservice.controller;
 
-import com.authservice.dto.AuthResponse;
-import com.authservice.dto.ChangePasswordRequest;
-import com.authservice.dto.UserListDto;
-import com.authservice.dto.UserUpdateDto;
+import com.authservice.dto.*;
 import com.authservice.model.User;
 import com.authservice.repository.RefreshTokenRepository;
 import com.authservice.repository.UserRepository;
@@ -16,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -45,20 +43,24 @@ public class AuthController {
     // LOGIN / REGISTER RECORDS
     // -------------------------------
     record LoginRequest(String email, String password){}
-    record RegisterRequest(String email, String password, String firstName, String lastName) {}
+    record RegisterRequest(String email, String password, String firstName, String lastName, Set<String> roles) {}
     record RefreshRequest(String refreshToken){}
     record RevokeRequest(String refreshToken){}
 
     // -------------------------------
     // REGISTER
     // -------------------------------
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
         try {
+            Set<String> roles = (request.roles() == null || request.roles().isEmpty())
+                    ? Set.of("ROLE_USER")
+                    : request.roles();
+
             User newUser = authService.registerUser(
-                    request.email(), request.password(), request.firstName(), request.lastName()
+                    request.email(), request.password(), request.firstName(), request.lastName(), roles
             );
-//            AuthResponse response = authService.authenticate(request.email(), request.password());
             AuthResponse response = authService.createTokensForUser(newUser, httpRequest);
 
             return ResponseEntity.ok(response);
@@ -67,6 +69,7 @@ public class AuthController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update-user/{id}")
     public ResponseEntity<UserListDto> update(
             @PathVariable UUID id,
@@ -153,6 +156,15 @@ public class AuthController {
 
         authService.changeUserPassword(userId, request.oldPassword(), request.newPassword());
         return ResponseEntity.ok("Pasword successfully udpated.");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/update-password")
+    public ResponseEntity<?> updatePasswordByAdmin(
+            @RequestBody AdminChangePasswordRequest request
+    ) {
+        authService.adminChangePassword(request.userId(), request.newPassword());
+        return ResponseEntity.ok("Password updated successfully by administrator.");
     }
 
     @GetMapping("/users")
