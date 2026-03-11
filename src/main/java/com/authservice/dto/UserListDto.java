@@ -1,5 +1,8 @@
 package com.authservice.dto;
 
+import com.authservice.model.Role;
+
+import java.util.Set;
 import java.util.UUID;
 
 public record UserListDto (
@@ -7,6 +10,7 @@ public record UserListDto (
         String email,
         String firstName,
         String lastName,
-        Boolean isActive
+        Boolean isActive,
+        Set<String> roles
 ) {
 }
