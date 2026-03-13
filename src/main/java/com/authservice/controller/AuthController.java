@@ -47,6 +47,8 @@ public class AuthController {
     record RefreshRequest(String refreshToken){}
     record RevokeRequest(String refreshToken){}
 
+    public record UserResponse(UUID id, String email, String fullName) {}
+
     // -------------------------------
     // REGISTER
     // -------------------------------
@@ -133,16 +135,14 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User unauthorized");
         }
 
-        UUID userId = UUID.fromString(jwt.getSubject());
+//        UUID userId = UUID.fromString(jwt.getSubject());
+        String email = jwt.getSubject();
 
-        return userRepository.findById(userId)
-                .map(user -> {
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("id", user.getId());
-                    data.put("email", user.getEmail());
-                    data.put("fullName", user.getFirstName() + " " + user.getLastName());
-                    return ResponseEntity.ok(data);
-                })
+        return userRepository.findByEmail(email)
+                .map(user -> ResponseEntity.ok(new UserResponse(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getFirstName() + " " + user.getLastName())))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
