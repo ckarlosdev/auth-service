@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -50,17 +51,29 @@ public class RefreshTokenService {
 //        refreshTokenRepository.save(token);
 //    }
 
-    public void revokeToken(String rawRefreshToken) {
-        List<RefreshToken> activeTokens = refreshTokenRepository.findAllByRevokedAtIsNull();
+    public void revokeToken(String fullRefreshToken) {
+        if (fullRefreshToken == null || !fullRefreshToken.contains(".")) {
+            throw new RuntimeException("Invalid refresh token format.");
+        }
 
-        RefreshToken token = activeTokens.stream()
-                .filter(t -> passwordEncoder.matches(rawRefreshToken, t.getTokenHash()))
-                .findFirst()
+        String[] parts = fullRefreshToken.split("\\.");
+        UUID tokenId = UUID.fromString(parts[0]);
+        String rawSecret = parts[1];
+
+        // 2. Buscar directamente por ID (mucho más rápido)
+        RefreshToken token = refreshTokenRepository.findById(tokenId)
                 .orElseThrow(() -> new RuntimeException("Refresh token not found"));
 
-        // Lo marca como revocado
-        token.setRevokedAt(Instant.now());
-        refreshTokenRepository.save(token);
+        // 3. Validar el secreto
+        if (!passwordEncoder.matches(rawSecret, token.getTokenHash())) {
+            throw new RuntimeException("Invalid refresh token secret");
+        }
+
+        // 4. Revocar si no estaba ya revocado
+        if (token.getRevokedAt() == null) {
+            token.setRevokedAt(Instant.now());
+            refreshTokenRepository.save(token);
+        }
     }
 
     private String hashToken(String token) {
