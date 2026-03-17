@@ -1,6 +1,7 @@
 package com.authservice.controller;
 
 import com.authservice.dto.*;
+import com.authservice.model.Role;
 import com.authservice.model.User;
 import com.authservice.repository.RefreshTokenRepository;
 import com.authservice.repository.UserRepository;
@@ -47,7 +48,7 @@ public class AuthController {
     record RefreshRequest(String refreshToken){}
     record RevokeRequest(String refreshToken){}
 
-    public record UserResponse(UUID id, String email, String fullName) {}
+    public record UserResponse(UUID id, String email, String fullName, Set<Role> roles) {}
 
     // -------------------------------
     // REGISTER
@@ -142,7 +143,10 @@ public class AuthController {
                 .map(user -> ResponseEntity.ok(new UserResponse(
                         user.getId(),
                         user.getEmail(),
-                        user.getFirstName() + " " + user.getLastName())))
+                        user.getFirstName() + " " + user.getLastName(),
+                        user.getRoles()
+
+                )))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
